@@ -5,6 +5,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 //import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import java.util.Arrays;
+
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -33,6 +35,7 @@ public class HelloWorldControllerTest {
 	static RequestBuilder helloWorld;
 	static RequestBuilder dummyItem;
 	static RequestBuilder dummyItemBusiness;
+	static RequestBuilder itemFromDatabase;
 
 	@BeforeAll
 	public static void initializers() {
@@ -47,7 +50,44 @@ public class HelloWorldControllerTest {
 		dummyItemBusiness  = MockMvcRequestBuilders
 				.get("/dummy-item-busines-service")
 				.accept(MediaType.APPLICATION_JSON);
-
+		
+		itemFromDatabase  = MockMvcRequestBuilders
+				.get("/all-item-from-database")
+				.accept(MediaType.APPLICATION_JSON);
+		
+		
+		/*
+		 * For different http request method testing
+		 * *POST
+		 * *PUT
+		 * *DELETE
+		 * 
+		 * HttpHeaders urlHeader = new HttpHeaders();
+		 * urlHeader.setContentType(MediaType.APPLICATION_JSON);
+		 * 
+		 * *WITHOUT HEADER
+		 * MockMvcRequestBuilders .post("/post/vi/service-name")
+		 * .accept(MediaType.APPLICATION_JSON) .content("JSON content")
+		 * .contentType(MediaType.APPLICATION_JSON);
+		 * 
+		 * *WIT HEADER
+		 * MockMvcRequestBuilders .post("/post/vi/service-name")
+		 * .accept(MediaType.APPLICATION_JSON) .content("JSON content")
+		 * .contentType(MediaType.APPLICATION_JSON).headers(urlHeader);
+		 * */
+		
+		/* 
+		 * For verifying Headers of response
+		 * 
+		 * mockMVC.perform(dummyItemBusiness)
+		.andExpect(status().isOk())
+		.andExpect(header().string(
+				"location", containsString("/item/")
+				))
+		.andExpect(content().json(
+				"{id:1,item:aloo,price:50,quantity:3}"
+				)); 
+		 * */ 
 
 	}
 
@@ -70,7 +110,7 @@ public class HelloWorldControllerTest {
 		 * string("Hello World!")).andReturn();
 		 * assertThat(result.getResponse().getContentAsString(),
 		 * equalToIgnoringCase("Hello World!"));
-		 */
+		 * */
 	}
 
 	@Test
@@ -114,6 +154,42 @@ public class HelloWorldControllerTest {
 		.andExpect(status().isOk())
 		.andExpect(content()
 				.json("{id:1,item:aloo,price:50,quantity:3}"));
+		
+	}
+	
+	@Test
+	public void retrieveAllItemEndPoint_accessBusinessClass_returnsItemJSONObjectfromBusinessClass() throws Exception {
+		
+		/*
+		 * when test rest service(controller methods) the we don't depend upon the its business logic to
+		 * perform and return value, instead we derive the business logic in BDD style
+		 * to return the expected value by mocking the business class.
+		 */
+		
+		when(businessService.getAllItems())
+		.thenReturn(
+				Arrays.asList(new Item(2,"aloo",10,20),new Item(3,"piyaz",30,40))
+				);
+		
+		/* 
+		 * as per the when scenario we are returning an array of size:2
+		 * so as below we are verifying the elements of the returning json array
+		 * */
+		mockMVC.perform(itemFromDatabase)
+		.andExpect(status().isOk())
+		.andExpect(content()
+				.json("[{id:2,item:aloo,price:10,quantity:20},{id:3,item:piyaz,price:30,quantity:40}]"));
+		
+		
+		/* 
+		 * as per the when scenario we are returning an array of size:2
+		 * so as below we can keep the empty array element
+		 * to just match the size and not exactly the content 
+		 * */
+//		mockMVC.perform(itemFromDatabase)
+//		.andExpect(status().isOk())
+//		.andExpect(content()
+//				.json("[{id:2,item:aloo,price:10,quantity:20},{}]"));
 		
 	}
 

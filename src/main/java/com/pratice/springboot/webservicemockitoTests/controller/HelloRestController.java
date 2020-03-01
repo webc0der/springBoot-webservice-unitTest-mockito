@@ -1,5 +1,7 @@
 package com.pratice.springboot.webservicemockitoTests.controller;
 
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -26,5 +28,10 @@ public class HelloRestController {
 	@GetMapping("/dummy-item-busines-service")
 	public Item dummyItemFromBusinessService() {
 		return businessService.retrieveHardcodedItem();
+	}
+	
+	@GetMapping("/all-item-from-database")
+	public List<Item> dummyItemFromDatabase() {
+		return businessService.getAllItems();
 	}
 }
